@@ -79,9 +79,12 @@ section_fish() {
 
   section "Fish shell"
   install_pacman_packages fish
-  fish_path="$(command -v fish)"
+  fish_path="$(command -v fish || true)"
+  [[ -n "$fish_path" ]] || die "fish was installed but is not available on PATH."
+  ensure_login_shell_registered "$fish_path"
+
   if [[ "$(current_shell_path)" != "$fish_path" ]]; then
-    chsh -s "$fish_path"
+    chsh -s "$fish_path" || die "Failed to change the default shell to ${fish_path}."
     add_note "Fish becomes your default shell on next login."
   else
     log_info "Fish is already the default shell."
@@ -305,15 +308,19 @@ build_sections() {
 
 run_selected_sections() {
   local -a selected_ids=("$@")
-  local idx selected_id
+  local idx selected_id found
 
   for selected_id in "${selected_ids[@]}"; do
+    found=0
     for idx in "${!SECTION_IDS[@]}"; do
       if [[ "${SECTION_IDS[$idx]}" == "$selected_id" ]]; then
         "${SECTION_FUNCS[$idx]}"
+        found=1
         break
       fi
     done
+
+    [[ "$found" -eq 1 ]] || die "Unknown section id: ${selected_id}"
   done
 }
 

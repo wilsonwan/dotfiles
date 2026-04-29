@@ -96,7 +96,14 @@ parse_args() {
       --profile)
         shift
         [[ $# -gt 0 ]] || die "--profile requires a value"
-        PROFILE_OVERRIDE="$1"
+        case "$1" in
+          native|wsl)
+            PROFILE_OVERRIDE="$1"
+            ;;
+          *)
+            die "--profile must be one of: native, wsl"
+            ;;
+        esac
         ;;
       --sections)
         shift

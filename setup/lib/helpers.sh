@@ -120,6 +120,30 @@ current_shell_path() {
   getent passwd "$USER" | awk -F: '{print $7}'
 }
 
+shell_registered() {
+  local shell_path="$1"
+  [[ -r /etc/shells ]] && grep -Fxq "$shell_path" /etc/shells
+}
+
+ensure_login_shell_registered() {
+  local shell_path="$1"
+
+  [[ -n "$shell_path" ]] || die "Login shell path cannot be empty."
+  [[ "$shell_path" == /* ]] || die "Login shell path must be absolute: ${shell_path}"
+  [[ -x "$shell_path" ]] || die "Login shell is not executable: ${shell_path}"
+
+  if shell_registered "$shell_path"; then
+    return 0
+  fi
+
+  log_info "Registering login shell in /etc/shells: ${shell_path}"
+  if [[ -e /etc/shells ]]; then
+    printf '%s\n' "$shell_path" | run_root tee -a /etc/shells >/dev/null
+  else
+    printf '%s\n' "$shell_path" | run_root tee /etc/shells >/dev/null
+  fi
+}
+
 user_in_group() {
   id -nG "$USER" | tr ' ' '\n' | grep -qx "$1"
 }
