@@ -312,6 +312,7 @@ run_selected_sections() {
   local idx selected_id found
 
   for selected_id in "${selected_ids[@]}"; do
+    [[ -n "$selected_id" ]] || continue
     found=0
     for idx in "${!SECTION_IDS[@]}"; do
       if [[ "${SECTION_IDS[$idx]}" == "$selected_id" ]]; then
