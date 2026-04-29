@@ -93,6 +93,7 @@ section_fish() {
 
 section_node() {
   section "Node.js and fnm"
+  install_pacman_packages unzip
 
   if ! command_exists fnm; then
     curl -fsSL https://fnm.vercel.app/install | bash
