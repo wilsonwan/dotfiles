@@ -169,6 +169,10 @@ select_default_sections_text() {
 }
 
 choose_sections() {
+  local ids_name="$1"
+  local labels_name="$2"
+  local enabled_name="$3"
+  local reasons_name="$4"
   local -n ids_ref="$1"
   local -n labels_ref="$2"
   local -n enabled_ref="$3"
@@ -190,8 +194,8 @@ choose_sections() {
   terminal_available || die "Interactive section selection requires a terminal. Re-run in a terminal, or pass --yes/--sections."
 
   if command_exists fzf; then
-    select_default_sections_fzf ids_ref labels_ref enabled_ref reasons_ref
+    select_default_sections_fzf "$ids_name" "$labels_name" "$enabled_name" "$reasons_name"
   else
-    select_default_sections_text ids_ref labels_ref enabled_ref reasons_ref
+    select_default_sections_text "$ids_name" "$labels_name" "$enabled_name" "$reasons_name"
   fi
 }
