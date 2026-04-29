@@ -69,6 +69,13 @@ That first run will:
 - enable passwordless wheel sudo
 - write `/etc/wsl.conf` with your default user and `systemd=true`
 
+If you want to automate that first run instead of answering the username prompt interactively, pass an explicit override:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/wilsonwan/dotfiles/main/setup/bootstrap.sh | \
+  bash -s -- --wsl-user <your-linux-username>
+```
+
 Then, from **Windows PowerShell**, restart the distro:
 
 ```powershell

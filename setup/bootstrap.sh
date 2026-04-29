@@ -3,6 +3,12 @@ set -euo pipefail
 
 DOTFILES_REPO_URL="https://github.com/wilsonwan/dotfiles"
 CANONICAL_DOTFILES_DIR="${HOME}/repos/personal/dotfiles"
+BOOTSTRAP_ARCHIVE_TMP_DIR=""
+WSL_USERNAME_OVERRIDE="${DOTFILES_WSL_USERNAME:-}"
+
+cleanup_bootstrap_archive() {
+  [[ -n "${BOOTSTRAP_ARCHIVE_TMP_DIR:-}" ]] && rm -rf "$BOOTSTRAP_ARCHIVE_TMP_DIR"
+}
 
 bootstrap_from_archive() {
   local tmp_dir archive_dir status
@@ -17,14 +23,20 @@ bootstrap_from_archive() {
   }
 
   tmp_dir="$(mktemp -d)"
-  trap 'rm -rf "$tmp_dir"' EXIT
+  BOOTSTRAP_ARCHIVE_TMP_DIR="$tmp_dir"
+  trap cleanup_bootstrap_archive EXIT
 
   curl -fsSL "${DOTFILES_REPO_URL}/archive/refs/heads/main.tar.gz" | tar -xzf - -C "$tmp_dir"
   archive_dir="${tmp_dir}/dotfiles-main"
 
-  bash "${archive_dir}/setup/bootstrap.sh" "$@"
-  status=$?
-  rm -rf "$tmp_dir"
+  if bash "${archive_dir}/setup/bootstrap.sh" "$@"; then
+    status=0
+  else
+    status=$?
+  fi
+
+  cleanup_bootstrap_archive
+  BOOTSTRAP_ARCHIVE_TMP_DIR=""
   trap - EXIT
   exit "$status"
 }
@@ -55,13 +67,17 @@ SECTIONS_OVERRIDE=()
 
 usage() {
   cat <<'EOF'
-Usage: setup/bootstrap.sh [--yes] [--profile native|wsl] [--sections id1,id2,...]
+Usage: setup/bootstrap.sh [--yes] [--profile native|wsl] [--sections id1,id2,...] [--wsl-user <name>]
 
 Options:
   --yes                 Accept default selections and prompt defaults.
   --profile <name>      Force profile selection for user-mode setup.
   --sections <ids>      Comma-separated section ids to run.
+  --wsl-user <name>     Override the first-run WSL username.
   -h, --help            Show this help.
+
+Environment:
+  DOTFILES_WSL_USERNAME Set the first-run WSL username override.
 EOF
 }
 
@@ -80,6 +96,11 @@ parse_args() {
         shift
         [[ $# -gt 0 ]] || die "--sections requires a value"
         IFS=',' read -r -a SECTIONS_OVERRIDE <<<"$1"
+        ;;
+      --wsl-user)
+        shift
+        [[ $# -gt 0 ]] || die "--wsl-user requires a value"
+        WSL_USERNAME_OVERRIDE="$1"
         ;;
       -h|--help)
         usage

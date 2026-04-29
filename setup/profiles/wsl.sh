@@ -22,8 +22,15 @@ run_wsl_bootstrap() {
   section "WSL bootstrap"
   install_pacman_packages sudo nano git curl fzf
 
-  username="$(prompt_with_default "New WSL username" "$(detect_wsl_default_user || true)")"
-  [[ -n "$username" ]] || die "A username is required."
+  if [[ -n "${WSL_USERNAME_OVERRIDE:-}" ]]; then
+    username="$WSL_USERNAME_OVERRIDE"
+    log_info "Using WSL username override: ${username}"
+  else
+    username="$(prompt_with_default "New WSL username" "$(detect_wsl_default_user || true)")"
+  fi
+
+  [[ -n "$username" ]] ||
+    die "A username is required. Re-run in a terminal or pass --wsl-user <name> (or set DOTFILES_WSL_USERNAME)."
 
   if id "$username" >/dev/null 2>&1; then
     log_info "User ${username} already exists; skipping user creation."

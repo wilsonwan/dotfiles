@@ -1,5 +1,25 @@
 #!/usr/bin/env bash
 
+terminal_available() {
+  [[ -t 0 ]] || [[ -r /dev/tty && -w /dev/tty ]]
+}
+
+read_prompt_line() {
+  local prompt_text="$1"
+  local answer
+
+  if [[ -t 0 ]]; then
+    read -r -p "$prompt_text" answer || return 1
+  elif [[ -r /dev/tty && -w /dev/tty ]]; then
+    printf '%s' "$prompt_text" >/dev/tty
+    IFS= read -r answer </dev/tty || return 1
+  else
+    return 1
+  fi
+
+  printf '%s\n' "$answer"
+}
+
 prompt_with_default() {
   local prompt="$1"
   local default_value="${2:-}"
@@ -11,10 +31,12 @@ prompt_with_default() {
   fi
 
   if [[ -n "$default_value" ]]; then
-    read -r -p "${prompt} [${default_value}]: " answer
+    answer="$(read_prompt_line "${prompt} [${default_value}]: ")" ||
+      die "Interactive input for '${prompt}' requires a terminal."
     printf '%s\n' "${answer:-$default_value}"
   else
-    read -r -p "${prompt}: " answer
+    answer="$(read_prompt_line "${prompt}: ")" ||
+      die "Interactive input for '${prompt}' requires a terminal."
     printf '%s\n' "$answer"
   fi
 }
@@ -28,7 +50,8 @@ confirm() {
     return 0
   fi
 
-  read -r -p "${prompt} [${default_answer}/n]: " answer
+  answer="$(read_prompt_line "${prompt} [${default_answer}/n]: ")" ||
+    die "Interactive confirmation for '${prompt}' requires a terminal."
   answer="${answer:-$default_answer}"
   [[ "$answer" =~ ^[Yy]$ ]]
 }
@@ -123,7 +146,8 @@ select_default_sections_text() {
   done
 
   echo
-  read -r -p "Enter numbers to disable from the default set (space-separated, Enter to keep all): " answer
+  answer="$(read_prompt_line "Enter numbers to disable from the default set (space-separated, Enter to keep all): ")" ||
+    die "Interactive section selection requires a terminal. Re-run in a terminal, or pass --yes/--sections."
   for number in $answer; do
     idx=$((number - 1))
     if [[ "${enabled_ref[$idx]:-0}" == "1" ]]; then
@@ -132,7 +156,8 @@ select_default_sections_text() {
     fi
   done
 
-  read -r -p "Enter numbers to enable from the skipped set (space-separated, Enter to keep as-is): " answer
+  answer="$(read_prompt_line "Enter numbers to enable from the skipped set (space-separated, Enter to keep as-is): ")" ||
+    die "Interactive section selection requires a terminal. Re-run in a terminal, or pass --yes/--sections."
   for number in $answer; do
     idx=$((number - 1))
     if [[ "${enabled_ref[$idx]:-1}" != "1" ]]; then
@@ -161,6 +186,8 @@ choose_sections() {
     done
     return 0
   fi
+
+  terminal_available || die "Interactive section selection requires a terminal. Re-run in a terminal, or pass --yes/--sections."
 
   if command_exists fzf; then
     select_default_sections_fzf ids_ref labels_ref enabled_ref reasons_ref
