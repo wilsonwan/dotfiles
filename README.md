@@ -149,5 +149,5 @@ See [`windows/README.md`](windows/README.md) for manual placement instructions.
 ## Notes
 
 - `fish_variables` is gitignored — fish manages it and it contains machine-specific data
-- `git/.gitconfig` only has the `gh` credential helper; set `user.name`/`user.email` locally
+- `git/.gitconfig` only tracks shared settings and includes `~/.gitconfig.local` for machine-local `user.name` / `user.email`
 - `nvim/` and `kitty/` are placeholders — edit `stow.sh` to enable them when ready

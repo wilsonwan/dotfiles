@@ -282,8 +282,8 @@ ensure_bootstrap_locale() {
 }
 
 git_identity_configured() {
-  [[ -n "$(git config --global user.name 2>/dev/null || true)" ]] &&
-  [[ -n "$(git config --global user.email 2>/dev/null || true)" ]]
+  [[ -n "$(git config --global --includes user.name 2>/dev/null || true)" ]] &&
+  [[ -n "$(git config --global --includes user.email 2>/dev/null || true)" ]]
 }
 
 upsert_ini_value() {

@@ -149,11 +149,13 @@ section_stow() {
 }
 
 section_git_config() {
-  local current_name current_email git_name git_email
+  local current_name current_email git_name git_email local_gitconfig
 
   section "Git identity"
-  current_name="$(git config --global user.name 2>/dev/null || true)"
-  current_email="$(git config --global user.email 2>/dev/null || true)"
+  local_gitconfig="${HOME}/.gitconfig.local"
+
+  current_name="$(git config --file "$local_gitconfig" user.name 2>/dev/null || git config --global --includes user.name 2>/dev/null || true)"
+  current_email="$(git config --file "$local_gitconfig" user.email 2>/dev/null || git config --global --includes user.email 2>/dev/null || true)"
 
   git_name="$(prompt_with_default "Git user.name" "$current_name")"
   git_email="$(prompt_with_default "Git user.email" "$current_email")"
@@ -161,8 +163,9 @@ section_git_config() {
   [[ -n "$git_name" ]] || die "Git user.name cannot be empty."
   [[ -n "$git_email" ]] || die "Git user.email cannot be empty."
 
-  git config --global user.name "$git_name"
-  git config --global user.email "$git_email"
+  git config --file "$local_gitconfig" user.name "$git_name"
+  git config --file "$local_gitconfig" user.email "$git_email"
+  chmod 600 "$local_gitconfig"
 }
 
 section_locale_timezone() {
