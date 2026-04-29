@@ -160,6 +160,20 @@ normalize_locale_name() {
   printf '%s\n' "$1" | tr '[:upper:]' '[:lower:]' | sed 's/utf-8/utf8/g'
 }
 
+locale_is_generic() {
+  local normalized_locale
+
+  normalized_locale="$(normalize_locale_name "${1:-}")"
+  case "$normalized_locale" in
+    ""|c|c.utf8|posix)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 locale_is_generated() {
   local locale="$1"
   local normalized_locale
@@ -228,27 +242,24 @@ suggest_locale_default() {
   local locale
 
   locale="$(detect_current_locale || true)"
-  if [[ -n "$locale" ]]; then
+  if [[ -n "$locale" ]] && ! locale_is_generic "$locale"; then
     printf '%s\n' "$locale"
     return 0
   fi
 
   locale="${LANG:-}"
-  case "$locale" in
-    ""|C|POSIX)
-      printf '%s\n' "en_US.UTF-8"
-      ;;
-    *)
-      printf '%s\n' "$locale"
-      ;;
-  esac
+  if locale_is_generic "$locale"; then
+    printf '%s\n' "en_US.UTF-8"
+  else
+    printf '%s\n' "$locale"
+  fi
 }
 
 configured_locale_ready() {
   local locale
 
   locale="$(detect_current_locale || true)"
-  [[ -n "$locale" ]] && locale_is_generated "$locale"
+  [[ -n "$locale" ]] && ! locale_is_generic "$locale" && locale_is_generated "$locale"
 }
 
 ensure_bootstrap_locale() {
