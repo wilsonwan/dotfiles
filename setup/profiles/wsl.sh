@@ -58,7 +58,7 @@ run_wsl_bootstrap() {
 Bootstrap complete.
 
 From Windows PowerShell, run:
-  wsl --terminate archlinux
+  wsl --terminate distroName
 
 Then relaunch WSL as ${username} and run the same bootstrap command again.
 EOF
@@ -70,8 +70,8 @@ profile_prepare_docker() {
   before="$(detect_wsl_default_user || true)"
   upsert_ini_value /etc/wsl.conf boot systemd true
   if ! systemd_ready; then
-    die "systemd is not active in this WSL session yet. Run 'wsl --terminate archlinux', relaunch WSL, then re-run setup."
+    die "systemd is not active in this WSL session yet. Run 'wsl --terminate distroName', relaunch WSL, then re-run setup."
   fi
-  add_note "If Docker does not start inside WSL yet, run 'wsl --terminate archlinux' and relaunch."
+  add_note "If Docker does not start inside WSL yet, run 'wsl --terminate distroName' and relaunch."
   [[ -n "$before" ]] && add_note "WSL default user: ${before}"
 }

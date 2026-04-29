@@ -79,10 +79,10 @@ curl -fsSL https://raw.githubusercontent.com/wilsonwan/dotfiles/main/setup/boots
 Then, from **Windows PowerShell**, restart the distro:
 
 ```powershell
-wsl --terminate archlinux
+wsl --terminate distroName
 ```
 
-After relaunching WSL as your regular user, run the **same** bootstrap command again to continue with the normal setup flow.
+After relaunching WSL as your regular user, run the **same** bootstrap command again with **sudo**, to continue with the normal setup flow.
 
 ### What the bootstrap can install
 
@@ -108,7 +108,7 @@ The interactive checklist is environment-aware and currently covers:
 | Step | Why |
 |------|-----|
 | `passwd` | Interactive by design |
-| `wsl --terminate archlinux` | Must be run from Windows PowerShell |
+| `wsl --terminate distroName` | Must be run from Windows PowerShell |
 | `gh auth login` | Left to the machine owner intentionally |
 | Re-login after shell/group changes | Needed for `chsh` and Docker group membership |
 

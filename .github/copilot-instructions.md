@@ -32,7 +32,7 @@ Quickly verify the bootstrap entrypoint still parses and exposes its CLI.
   - `setup/profiles/common.sh` defines installable sections and the shared user setup flow
   - `setup/profiles/wsl.sh` handles WSL-specific bootstrap and Docker/systemd checks
   - `setup/profiles/native.sh` is the native Arch hook point
-- **WSL has a two-phase flow hidden behind one command**: root on first boot runs the WSL bootstrap path (user creation, sudo, `/etc/wsl.conf`, systemd), then after `wsl --terminate archlinux` the same entrypoint runs the normal user setup flow.
+- **WSL has a two-phase flow hidden behind one command**: root on first boot runs the WSL bootstrap path (user creation, sudo, `/etc/wsl.conf`, systemd), then after `wsl --terminate distroName` the same entrypoint runs the normal user setup flow.
 
 ## Key conventions
 
