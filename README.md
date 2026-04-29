@@ -124,7 +124,7 @@ The interactive checklist is environment-aware and currently covers:
 If you already have the repo locally:
 
 ```bash
-cd ~/repos/personal/dotfiles
+cd ~/repos/dotfiles
 ./setup/bootstrap.sh
 ```
 

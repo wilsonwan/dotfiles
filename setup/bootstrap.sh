@@ -2,7 +2,7 @@
 set -euo pipefail
 
 DOTFILES_REPO_URL="https://github.com/wilsonwan/dotfiles"
-CANONICAL_DOTFILES_DIR="${HOME}/repos/personal/dotfiles"
+CANONICAL_DOTFILES_DIR="${HOME}/repos/dotfiles"
 BOOTSTRAP_ARCHIVE_TMP_DIR=""
 WSL_USERNAME_OVERRIDE="${DOTFILES_WSL_USERNAME:-}"
 
