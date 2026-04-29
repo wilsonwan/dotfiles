@@ -40,7 +40,13 @@ run_wsl_bootstrap() {
   fi
 
   section "Set password for ${username}"
-  passwd "$username"
+  if [[ -t 0 ]]; then
+    passwd "$username"
+  elif [[ -r /dev/tty ]]; then
+    passwd "$username" </dev/tty
+  else
+    die "Setting the password for ${username} requires a terminal."
+  fi
 
   section "Configuring sudo and WSL"
   run_root sed -i 's/^# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers

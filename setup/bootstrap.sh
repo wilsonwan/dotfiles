@@ -29,7 +29,13 @@ bootstrap_from_archive() {
   curl -fsSL "${DOTFILES_REPO_URL}/archive/refs/heads/main.tar.gz" | tar -xzf - -C "$tmp_dir"
   archive_dir="${tmp_dir}/dotfiles-main"
 
-  if bash "${archive_dir}/setup/bootstrap.sh" "$@"; then
+  if [[ ! -t 0 && -r /dev/tty ]]; then
+    if bash "${archive_dir}/setup/bootstrap.sh" "$@" </dev/tty; then
+      status=0
+    else
+      status=$?
+    fi
+  elif bash "${archive_dir}/setup/bootstrap.sh" "$@"; then
     status=0
   else
     status=$?
