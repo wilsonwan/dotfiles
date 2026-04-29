@@ -165,7 +165,7 @@ section_locale_timezone() {
   local locale timezone
 
   section "Locale and timezone"
-  locale="$(prompt_with_default "Locale" "$(detect_current_locale || true)")"
+  locale="$(prompt_with_default "Locale" "$(suggest_locale_default)")"
   timezone="$(prompt_with_default "Timezone" "$(detect_current_timezone || true)")"
 
   [[ -n "$locale" ]] || die "Locale cannot be empty."
@@ -220,7 +220,7 @@ is_section_complete() {
       git_identity_configured
       ;;
     locale-timezone)
-      [[ -n "$(detect_current_locale || true)" && -n "$(detect_current_timezone || true)" ]]
+      configured_locale_ready && [[ -n "$(detect_current_timezone || true)" ]]
       ;;
     *)
       return 1
@@ -326,6 +326,7 @@ run_user_setup() {
   fi
 
   require_sudo
+  ensure_bootstrap_locale
   install_pacman_packages git curl base-devel fzf
 
   if [[ -n "$PROFILE_OVERRIDE" ]]; then

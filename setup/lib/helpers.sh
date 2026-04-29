@@ -132,6 +132,22 @@ systemd_ready() {
   command_exists systemctl && systemctl show-environment >/dev/null 2>&1
 }
 
+normalize_locale_name() {
+  printf '%s\n' "$1" | tr '[:upper:]' '[:lower:]' | sed 's/utf-8/utf8/g'
+}
+
+locale_is_generated() {
+  local locale="$1"
+  local normalized_locale
+  local available_locales
+
+  [[ -n "$locale" ]] || return 1
+
+  normalized_locale="$(normalize_locale_name "$locale")"
+  available_locales="$(locale -a 2>/dev/null | tr '[:upper:]' '[:lower:]' | sed 's/utf-8/utf8/g')"
+  grep -qx "$normalized_locale" <<<"$available_locales"
+}
+
 ensure_locale_generated() {
   local locale="$1"
   local entry="${locale} UTF-8"
@@ -149,7 +165,7 @@ ensure_locale_generated() {
 set_system_locale() {
   local locale="$1"
 
-  if command_exists localectl; then
+  if command_exists localectl && systemd_ready; then
     run_root localectl set-locale "LANG=${locale}"
   else
     printf 'LANG=%s\n' "$locale" | run_root tee /etc/locale.conf >/dev/null
@@ -161,12 +177,10 @@ detect_current_locale() {
     awk -F= '/^LANG=/{print $2; exit}' /etc/locale.conf
     return 0
   fi
-
-  locale | awk -F= '/^LANG=/{print $2; exit}'
 }
 
 detect_current_timezone() {
-  if command_exists timedatectl; then
+  if command_exists timedatectl && systemd_ready; then
     timedatectl show --property=Timezone --value 2>/dev/null || true
     return 0
   fi
@@ -179,11 +193,57 @@ detect_current_timezone() {
 set_system_timezone() {
   local timezone="$1"
 
-  if command_exists timedatectl; then
+  if command_exists timedatectl && systemd_ready; then
     run_root timedatectl set-timezone "$timezone"
   else
     run_root ln -sf "/usr/share/zoneinfo/${timezone}" /etc/localtime
   fi
+}
+
+suggest_locale_default() {
+  local locale
+
+  locale="$(detect_current_locale || true)"
+  if [[ -n "$locale" ]]; then
+    printf '%s\n' "$locale"
+    return 0
+  fi
+
+  locale="${LANG:-}"
+  case "$locale" in
+    ""|C|POSIX)
+      printf '%s\n' "en_US.UTF-8"
+      ;;
+    *)
+      printf '%s\n' "$locale"
+      ;;
+  esac
+}
+
+configured_locale_ready() {
+  local locale
+
+  locale="$(detect_current_locale || true)"
+  [[ -n "$locale" ]] && locale_is_generated "$locale"
+}
+
+ensure_bootstrap_locale() {
+  local locale
+
+  if configured_locale_ready; then
+    export LANG="$(detect_current_locale)"
+    unset LC_ALL
+    return 0
+  fi
+
+  locale="${1:-$(suggest_locale_default)}"
+
+  section "Configuring locale"
+  ensure_locale_generated "$locale"
+  set_system_locale "$locale"
+
+  export LANG="$locale"
+  unset LC_ALL
 }
 
 git_identity_configured() {

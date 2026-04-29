@@ -20,6 +20,7 @@ run_wsl_bootstrap() {
   local username
 
   section "WSL bootstrap"
+  ensure_bootstrap_locale
   install_pacman_packages sudo nano git curl fzf
 
   if [[ -n "${WSL_USERNAME_OVERRIDE:-}" ]]; then
