@@ -1,0 +1,17 @@
+# ── Fish ────────────────────────────────────────────────────────────────────
+# fish_variables is machine-specific (managed by fish itself)
+linux/fish/.config/fish/fish_variables
+
+# ── OS noise ────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+
+# ── Editor ──────────────────────────────────────────────────────────────────
+.idea/
+*.swp
+*.swo
+
+# ── Secrets / credentials ────────────────────────────────────────────────────
+# gh CLI auth is in ~/.config/gh — not tracked
+# git user.name/email — set locally per machine, not in repo

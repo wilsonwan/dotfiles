@@ -1,0 +1,121 @@
+# Starship prompt configuration
+# https://starship.rs/config/
+# Cross-platform: used on both Linux (stowed) and Windows (copy in windows/starship/)
+
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Timeout for commands that starship runs
+command_timeout = 1000
+
+# ── Prompt format ────────────────────────────────────────────────────────────
+format = """
+[╭─](fg:#585b70)\
+$os\
+$username\
+$directory\
+$git_branch\
+$git_status\
+$fill\
+$cmd_duration\
+$time\
+$line_break\
+[╰─](fg:#585b70)$character"""
+
+# ── Palette ──────────────────────────────────────────────────────────────────
+palette = "catppuccin_mocha"
+
+[palettes.catppuccin_mocha]
+rosewater = "#f5e0dc"
+flamingo  = "#f2cdcd"
+pink      = "#f5c2e7"
+mauve     = "#cba6f7"
+red       = "#f38ba8"
+maroon    = "#eba0ac"
+peach     = "#fab387"
+yellow    = "#f9e2af"
+green     = "#a6e3a1"
+teal      = "#94e2d5"
+sky       = "#89dceb"
+sapphire  = "#74c7ec"
+blue      = "#89b4fa"
+lavender  = "#b4befe"
+text      = "#cdd6f4"
+subtext1  = "#bac2de"
+subtext0  = "#a6adc8"
+overlay2  = "#9399b2"
+overlay1  = "#7f849c"
+overlay0  = "#6c7086"
+surface2  = "#585b70"
+surface1  = "#45475a"
+surface0  = "#313244"
+base      = "#1e1e2e"
+mantle    = "#181825"
+crust     = "#11111b"
+
+# ── Modules ──────────────────────────────────────────────────────────────────
+[os]
+format = "[$symbol ](fg:mauve)"
+disabled = false
+
+[os.symbols]
+Windows = "󰍲"
+Arch    = "󰣇"
+Linux   = ""
+
+[username]
+style_user  = "fg:mauve bold"
+style_root  = "fg:red bold"
+format      = "[$user]($style) "
+show_always = false
+
+[directory]
+format            = "[$path](fg:blue bold)[$read_only](fg:red) "
+truncation_length = 4
+truncate_to_repo  = true
+read_only         = " 󰌾"
+
+[git_branch]
+format = "[$symbol$branch](fg:mauve) "
+symbol = " "
+
+[git_status]
+format    = "([$all_status$ahead_behind](fg:peach) )"
+ahead     = "⇡${count}"
+behind    = "⇣${count}"
+diverged  = "⇕⇡${ahead_count}⇣${behind_count}"
+modified  = "!${count}"
+staged    = "+${count}"
+untracked = "?${count}"
+deleted   = "✘${count}"
+
+[fill]
+symbol = " "
+
+[cmd_duration]
+format    = "[$duration](fg:yellow) "
+min_time  = 2_000
+
+[time]
+disabled      = false
+time_format   = "%H:%M"
+format        = "[󱑍 $time](fg:subtext0) "
+
+[character]
+success_symbol = "[❯](fg:green bold)"
+error_symbol   = "[❯](fg:red bold)"
+vimcmd_symbol  = "[❮](fg:mauve bold)"
+
+[nodejs]
+format = "[ $version](fg:green) "
+
+[python]
+format = "[ $version](fg:yellow) "
+
+[rust]
+format = "[ $version](fg:peach) "
+
+[golang]
+format = "[ $version](fg:sky) "
+
+[docker_context]
+format = "[ $context](fg:blue) "
