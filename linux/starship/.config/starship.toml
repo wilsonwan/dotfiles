@@ -1,6 +1,5 @@
 # Starship prompt configuration
 # https://starship.rs/config/
-# Cross-platform: used on both Linux (stowed) and Windows (copy in windows/starship/)
 
 "$schema" = 'https://starship.rs/config-schema.json'
 
@@ -15,6 +14,11 @@ $username\
 $directory\
 $git_branch\
 $git_status\
+$dotnet\
+$rust\
+$golang\
+$nodejs\
+$python\
 $fill\
 $cmd_duration\
 $time\
@@ -60,7 +64,8 @@ disabled = false
 [os.symbols]
 Windows = "󰍲"
 Arch    = "󰣇"
-Linux   = ""
+CachyOS = ""
+Linux   = "󰌽"
 
 [username]
 style_user  = "fg:mauve bold"
@@ -76,7 +81,10 @@ read_only         = " 󰌾"
 
 [git_branch]
 format = "[$symbol$branch](fg:mauve) "
-symbol = " "
+symbol = " "
+
+[git_commit]
+tag_symbol = '  '
 
 [git_status]
 format    = "([$all_status$ahead_behind](fg:peach) )"
@@ -106,16 +114,25 @@ error_symbol   = "[❯](fg:red bold)"
 vimcmd_symbol  = "[❮](fg:mauve bold)"
 
 [nodejs]
-format = "[ $version](fg:green) "
+format = "[ $symbol($version)](fg:green) "
+symbol = " "
 
 [python]
-format = "[ $version](fg:yellow) "
+format = "[ $symbol($version)](fg:yellow) "
+symbol = " "
 
 [rust]
-format = "[ $version](fg:peach) "
+format = "[ $symbol($version)](fg:peach) "
+symbol = "󱘗 "
 
 [golang]
-format = "[ $version](fg:sky) "
+format = "[ $symbol($version)](fg:sky) "
+symbol = " "
 
 [docker_context]
 format = "[ $context](fg:blue) "
+symbol = " "
+
+[dotnet]
+format = "[ $symbol($version)](fg:mauve)"
+symbol = " "
