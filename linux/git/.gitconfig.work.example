@@ -1,0 +1,18 @@
+# Work git identity template
+#
+# This is managed automatically by setup/bootstrap.sh (section_git_config).
+# The bootstrap script will:
+#   1. Prompt for a work repos directory name (e.g. "acme") and work identity.
+#   2. Write ~/.gitconfig.work with the work user.name and user.email.
+#   3. Add an [includeIf] to ~/.gitconfig.local so repos under ~/acme/ pick up
+#      the work identity automatically.
+#
+# To set up or update manually, copy this file to ~/.gitconfig.work and add
+# the following to ~/.gitconfig.local (replacing "acme" with your work root):
+#
+#   [includeIf "gitdir:~/acme/"]
+#       path = ~/.gitconfig.work
+
+[user]
+	name  = Your Work Name
+	email = you@company.com
