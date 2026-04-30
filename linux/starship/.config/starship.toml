@@ -14,6 +14,7 @@ $username\
 $directory\
 $git_branch\
 $git_status\
+${custom.git_identity}\
 $dotnet\
 $rust\
 $golang\
@@ -136,3 +137,9 @@ symbol = " "
 [dotnet]
 format = "[ $symbol($version)](fg:mauve)"
 symbol = " "
+
+[custom.git_identity]
+command = "git config user.email"
+when    = "git rev-parse --git-dir"
+format  = "[\\($output\\)](fg:subtext0) "
+symbol  = ""
