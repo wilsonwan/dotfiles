@@ -149,5 +149,5 @@ See [`windows/README.md`](windows/README.md) for manual placement instructions.
 ## Notes
 
 - `fish_variables` is gitignored — fish manages it and it contains machine-specific data
-- `git/.gitconfig` only tracks shared settings and includes `~/.gitconfig.local` for machine-local `user.name` / `user.email`
+- `git/.gitconfig` only tracks shared settings and includes `~/.gitconfig.local` for machine-local `user.name` / `user.email`; the bootstrap's **Git identity** section also provisions `~/.gitconfig.work` and an `includeIf` in `~/.gitconfig.local` for a separate work identity scoped to a chosen directory
 - `nvim/` and `kitty/` are placeholders — edit `stow.sh` to enable them when ready
