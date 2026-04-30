@@ -150,10 +150,13 @@ section_stow() {
 
 section_git_config() {
   local current_name current_email git_name git_email local_gitconfig
+  local work_gitconfig current_work_dir work_default work_dir work_name work_email
 
   section "Git identity"
   local_gitconfig="${HOME}/.gitconfig.local"
+  work_gitconfig="${HOME}/.gitconfig.work"
 
+  # --- Personal identity ---
   current_name="$(git config --file "$local_gitconfig" user.name 2>/dev/null || git config --global --includes user.name 2>/dev/null || true)"
   current_email="$(git config --file "$local_gitconfig" user.email 2>/dev/null || git config --global --includes user.email 2>/dev/null || true)"
 
@@ -166,6 +169,41 @@ section_git_config() {
   git config --file "$local_gitconfig" user.name "$git_name"
   git config --file "$local_gitconfig" user.email "$git_email"
   chmod 600 "$local_gitconfig"
+
+  # --- Work identity (optional) ---
+  # Read the currently configured work directory from the includeIf in .gitconfig.local
+  current_work_dir="$(git config --file "$local_gitconfig" --get-regexp 'includeif\.gitdir' 2>/dev/null \
+    | sed 's|.*gitdir:~/\([^/]*\)/.*|\1|' | head -1 || true)"
+
+  # In non-interactive mode, only update work identity if already configured
+  [[ "$AUTO_YES" -eq 1 && -z "$current_work_dir" ]] && return 0
+
+  work_default="${current_work_dir:+Y}"
+  work_default="${work_default:-N}"
+  if confirm "Set up work Git identity?" "$work_default"; then
+    work_dir="$(prompt_with_default "Work repos directory name (under ~/)" "${current_work_dir}")"
+    [[ -n "$work_dir" ]] || die "Work directory name cannot be empty."
+
+    work_name="$(git config --file "$work_gitconfig" user.name 2>/dev/null || true)"
+    work_email="$(git config --file "$work_gitconfig" user.email 2>/dev/null || true)"
+
+    work_name="$(prompt_with_default "Work Git user.name" "$work_name")"
+    work_email="$(prompt_with_default "Work Git user.email" "$work_email")"
+
+    [[ -n "$work_name" ]] || die "Work Git user.name cannot be empty."
+    [[ -n "$work_email" ]] || die "Work Git user.email cannot be empty."
+
+    # Remove stale includeIf if the work directory name changed
+    if [[ -n "$current_work_dir" && "$current_work_dir" != "$work_dir" ]]; then
+      git config --file "$local_gitconfig" --remove-section "includeIf.gitdir:~/${current_work_dir}/" 2>/dev/null || true
+    fi
+
+    git config --file "$local_gitconfig" "includeIf.gitdir:~/${work_dir}/.path" "$work_gitconfig"
+
+    git config --file "$work_gitconfig" user.name "$work_name"
+    git config --file "$work_gitconfig" user.email "$work_email"
+    chmod 600 "$work_gitconfig"
+  fi
 }
 
 section_locale_timezone() {
