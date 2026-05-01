@@ -25,6 +25,45 @@ function _gh_desired_account
     end
 end
 
+function _gh_set_active_account
+    if test (count $argv) -eq 0
+        set -e GH_ACTIVE_ACCOUNT
+        return 1
+    end
+    set -gx GH_ACTIVE_ACCOUNT $argv[1]
+end
+
+function _gh_sync_active_account
+    command -q gh
+    or return 1
+
+    set -l active (gh auth status 2>&1 | awk '
+        /Logged in to github\.com account / {
+            if (match($0, /account ([^ ]+) \(/, captures)) {
+                account = captures[1]
+            }
+        }
+        /Active account: true/ {
+            if (account != "") {
+                print account
+                exit
+            }
+        }
+    ')
+    test -n "$active"
+    or return 1
+
+    _gh_set_active_account $active
+end
+
+function _gh_switch_account
+    set -l account $argv[1]
+    gh auth switch --user $account 2>/dev/null
+    or return 1
+
+    _gh_set_active_account $account
+end
+
 function _gh_auth_auto --on-variable PWD
     if set -q GH_AUTH_MANUAL; or set -q _GH_AUTH_MANUAL
         return
@@ -36,8 +75,10 @@ function _gh_auth_auto --on-variable PWD
         set last_auto $_GH_LAST_AUTO_ACCOUNT
     end
     if test "$desired" != "$last_auto"
-        gh auth switch --user $desired 2>/dev/null
+        _gh_switch_account $desired
         and set -g GH_LAST_AUTO_ACCOUNT $desired
+    else
+        _gh_set_active_account $desired
     end
 end
 
@@ -50,7 +91,7 @@ function gh-switch
             end
             set -gx GH_AUTH_MANUAL 1
             set -e _GH_AUTH_MANUAL
-            gh auth switch --user $GH_PERSONAL_ACCOUNT
+            _gh_switch_account $GH_PERSONAL_ACCOUNT
         case work
             if not set -q GH_WORK_ACCOUNT
                 echo "gh-switch: not configured — run 'gh-switch setup' first"
@@ -58,7 +99,7 @@ function gh-switch
             end
             set -gx GH_AUTH_MANUAL 1
             set -e _GH_AUTH_MANUAL
-            gh auth switch --user $GH_WORK_ACCOUNT
+            _gh_switch_account $GH_WORK_ACCOUNT
         case auto
             set -e GH_AUTH_MANUAL
             set -e GH_LAST_AUTO_ACCOUNT
@@ -78,8 +119,10 @@ function gh-switch
                 echo "gh-switch: not configured — run 'gh-switch setup' first"
                 return 0
             end
-            set -l active (gh auth status 2>&1 | string match -r '(?<=account )\S+(?= \()' | head -1)
-            echo "Active gh account : $active"
+            if not set -q GH_ACTIVE_ACCOUNT
+                _gh_sync_active_account >/dev/null
+            end
+            echo "Active gh account : $GH_ACTIVE_ACCOUNT"
             if set -q GH_AUTH_MANUAL; or set -q _GH_AUTH_MANUAL
                 echo "Auto-switch       : OFF (run 'gh-switch auto' to re-enable)"
             else
@@ -102,3 +145,6 @@ set -e _GH_LAST_AUTO_ACCOUNT
 
 # Apply on shell start (PWD change event won't fire at init time)
 _gh_auth_auto
+if not set -q GH_ACTIVE_ACCOUNT
+    _gh_sync_active_account >/dev/null
+end

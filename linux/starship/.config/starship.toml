@@ -15,6 +15,7 @@ $directory\
 $git_branch\
 $git_status\
 ${custom.git_identity}\
+${custom.github_user}\
 $dotnet\
 $rust\
 $golang\
@@ -139,7 +140,14 @@ format = "[ $symbol($version)](fg:mauve)"
 symbol = " "
 
 [custom.git_identity]
-command = "git config user.email"
-when    = "git rev-parse --git-dir"
-format  = "[\\($output\\)](fg:subtext0) "
-symbol  = ""
+command = "git config --get user.email"
+when = true
+require_repo = false
+format  = "[($symbol$output)](fg:peach) "
+symbol  = " "
+
+[custom.github_user]
+command = "printf '%s' \"$GH_ACTIVE_ACCOUNT\""
+when    = "test -n \"$GH_ACTIVE_ACCOUNT\""
+format  = "[($symbol$output)](fg:yellow) "
+symbol  = " "
