@@ -82,7 +82,7 @@ Then, from **Windows PowerShell**, restart the distro:
 wsl --terminate distroName
 ```
 
-After relaunching WSL as your regular user, run the **same** bootstrap command again with **sudo**, to continue with the normal setup flow.
+After relaunching WSL as your regular user, run the **same** bootstrap command again to continue with the normal setup flow.
 
 ### What the bootstrap can install
 
@@ -94,7 +94,7 @@ The interactive checklist is environment-aware and currently covers:
 - essential CLI/dev tools
 - Docker
 - Fish
-- Node.js 24 via `fnm`
+- Node.js 24 via `fnm` (+ yarn, pnpm, tsc)
 - .NET SDK + `dotnet-ef`
 - GitHub CLI
 - AUR extras (`lazygit`, `starship`, `fastfetch`)
