@@ -4,7 +4,7 @@
 # One-time setup (stored in fish_variables, not the repo):
 #   gh-switch setup
 #
-# Manual override (per session):
+# Manual override (per terminal session, including child shells):
 #   gh-switch          — show current account and override status
 #   gh-switch work     — force work account (disables auto-switch this session)
 #   gh-switch personal — force personal account (disables auto-switch this session)
@@ -26,14 +26,18 @@ function _gh_desired_account
 end
 
 function _gh_auth_auto --on-variable PWD
-    if set -q _GH_AUTH_MANUAL
+    if set -q GH_AUTH_MANUAL; or set -q _GH_AUTH_MANUAL
         return
     end
     set -l desired (_gh_desired_account)
     or return
-    if test "$desired" != "$_GH_LAST_AUTO_ACCOUNT"
+    set -l last_auto $GH_LAST_AUTO_ACCOUNT
+    if not set -q GH_LAST_AUTO_ACCOUNT; and set -q _GH_LAST_AUTO_ACCOUNT
+        set last_auto $_GH_LAST_AUTO_ACCOUNT
+    end
+    if test "$desired" != "$last_auto"
         gh auth switch --user $desired 2>/dev/null
-        and set -g _GH_LAST_AUTO_ACCOUNT $desired
+        and set -g GH_LAST_AUTO_ACCOUNT $desired
     end
 end
 
@@ -44,16 +48,20 @@ function gh-switch
                 echo "gh-switch: not configured — run 'gh-switch setup' first"
                 return 1
             end
-            set -g _GH_AUTH_MANUAL 1
+            set -gx GH_AUTH_MANUAL 1
+            set -e _GH_AUTH_MANUAL
             gh auth switch --user $GH_PERSONAL_ACCOUNT
         case work
             if not set -q GH_WORK_ACCOUNT
                 echo "gh-switch: not configured — run 'gh-switch setup' first"
                 return 1
             end
-            set -g _GH_AUTH_MANUAL 1
+            set -gx GH_AUTH_MANUAL 1
+            set -e _GH_AUTH_MANUAL
             gh auth switch --user $GH_WORK_ACCOUNT
         case auto
+            set -e GH_AUTH_MANUAL
+            set -e GH_LAST_AUTO_ACCOUNT
             set -e _GH_AUTH_MANUAL
             set -e _GH_LAST_AUTO_ACCOUNT
             _gh_auth_auto
@@ -72,7 +80,7 @@ function gh-switch
             end
             set -l active (gh auth status 2>&1 | string match -r '(?<=account )\S+(?= \()' | head -1)
             echo "Active gh account : $active"
-            if set -q _GH_AUTH_MANUAL
+            if set -q GH_AUTH_MANUAL; or set -q _GH_AUTH_MANUAL
                 echo "Auto-switch       : OFF (run 'gh-switch auto' to re-enable)"
             else
                 echo "Auto-switch       : ON  (run 'gh-switch work|personal' to override)"
@@ -81,6 +89,16 @@ function gh-switch
             echo "Usage: gh-switch [personal|work|auto|setup]"
     end
 end
+
+# Prefer GH_* state so launchers that sanitize underscore-prefixed vars still inherit it.
+if set -q _GH_AUTH_MANUAL; and not set -q GH_AUTH_MANUAL
+    set -gx GH_AUTH_MANUAL $_GH_AUTH_MANUAL
+end
+if set -q _GH_LAST_AUTO_ACCOUNT; and not set -q GH_LAST_AUTO_ACCOUNT
+    set -g GH_LAST_AUTO_ACCOUNT $_GH_LAST_AUTO_ACCOUNT
+end
+set -e _GH_AUTH_MANUAL
+set -e _GH_LAST_AUTO_ACCOUNT
 
 # Apply on shell start (PWD change event won't fire at init time)
 _gh_auth_auto
